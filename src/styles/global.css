@@ -1,0 +1,171 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+/* Corrección: App debe ser .App */
+.App {
+    max-width: 500px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-top: 2rem;
+    color: #333;
+}
+
+/* Input y botón */
+input[type="text"] {
+    padding: 0.5rem 1rem;
+    width: 70%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: #007BFF;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+/* Lista de tareas */
+ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 2rem;
+}
+
+li {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    background: #fafafa;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+li span {
+    cursor: pointer;
+}
+
+li span.completed {
+    text-decoration: line-through;
+    color: #888;
+}
+
+li:hover {
+    background: #f1f1f1;
+    transform: scale(1.02);
+}
+
+/* Animaciones para enter/exit */
+li.enter {
+    transform: translateY(-10px);
+    opacity: 0;
+}
+
+li.enter-active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+li.exit {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+li.exit-active {
+    transform: translateY(10px);
+    opacity: 0;
+}
+
+/* Botón eliminar */
+button.delete-btn {
+    background: #e74c3c;
+    color: #fff;
+}
+
+button.delete-btn:hover {
+    background: #c0392b;
+}
+
+/* Filtros */
+.filters {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.filters button {
+    margin: 0 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #007BFF;
+    background: #fff;
+    color: #007BFF;
+}
+
+.filters button.active {
+    background: #007BFF;
+    color: #fff;
+}
+
+/* Tema oscuro */
+.App.dark {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.App.dark input[type="text"] {
+    background: #1e1e1e;
+    color: #fff;
+    border: 1px solid #555;
+}
+
+.App.dark li {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.App.dark li.completed {
+    color: #888;
+}
+
+.App.dark button {
+    border-color: #007BFF;
+}
+
+.App.dark .filters button {
+    border-color: #1e90ff;
+    color: #1e90ff;
+}
+
+.App.dark .filters button.active {
+    background: #1e90ff;
+    color: #fff;
+}
