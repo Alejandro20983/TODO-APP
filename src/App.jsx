@@ -7,6 +7,7 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("Todas");
   const [darkMode, setDarkMode] = useState(false);
+  const[priorityFilter, setPriorityFilter] = useState("Todas");
 
   // Cargar tareas y tema desde localStorage al iniciar
   useEffect(() => {
@@ -60,6 +61,10 @@ function App() {
   const filteredTodos = todos.filter((todo) => {
     if (filter === "Completadas") return todo.completed;
     if (filter === "Pendientes") return !todo.completed;
+
+    if(priorityFilter === "Baja" && todo.priority !== "low") return false;
+    if(priorityFilter === "Media" && todo.priority !== "medium") return false;
+    if(priorityFilter === "Alta" && todo.priority !== "high") return false;
     return true;
   });
 
@@ -89,7 +94,7 @@ function App() {
       </div>
 
       <TodoInput addTodo={addTodo} />
-      <TodoFilters currentFilter={filter} setFilter={setFilter} />
+      <TodoFilters currentFilter={filter} setFilter={setFilter} currentPriority={priorityFilter} setPriorityFilter={setPriorityFilter} />
       {/* Pasar sortedTodos a TodoList */}
       <TodoList
         todos={sortedTodos}
