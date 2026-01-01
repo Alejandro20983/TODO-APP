@@ -5,5 +5,6 @@
     --text-color: #333;
     --text-color-dark: #e0e0e0;
     --tarea-color-1: #3498db;/*Prioridad baja*/
-    --tarea-color-2: #f1c40f;/*Prioridad media*/
+    --tarea-color-2: #f5d402;/*Prioridad media*/
+    --primary-color-dark: #c9583a;
 }

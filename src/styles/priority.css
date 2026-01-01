@@ -22,5 +22,5 @@
 }
 
 .App.dark .todo-priority-high {
-    border-left: 5px solid var(--primary-color);
+    border-left: 5px solid var(--primary-color-dark);
 }
