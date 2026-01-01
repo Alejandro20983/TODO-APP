@@ -198,7 +198,7 @@ button.delete-btn:hover {
 
 .App.dark button {
     border-color: var(--secondary-color);
-    color: #fff;
+    color: var(--primary-color);
 }
 .App.dark button:hover{
     opacity: 0.9;
