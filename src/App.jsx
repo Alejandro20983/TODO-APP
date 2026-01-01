@@ -27,45 +27,55 @@ function App() {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
+  // Agregar tarea con prioridad
   const addTodo = (task, priority = "low") => {
-    const newTodo = { id: Date.now(),
+    const newTodo = {
+      id: Date.now(),
       task,
       completed: false,
-      priority};
+      priority, // low, medium, high
+    };
     setTodos([...todos, newTodo]);
   };
 
   const toggleComplete = (id) => {
-    setTodos(todos.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo));
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
   };
 
   const deleteTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+    setTodos(todos.filter((todo) => todo.id !== id));
   };
 
-  const filteredTodos = todos.filter(todo => {
+  const editTodo = (id, newTask) => {
+    setTodos(
+      todos.map((todo) => (todo.id === id ? { ...todo, task: newTask } : todo))
+    );
+  };
+
+  // Filtrado por completadas/pendientes
+  const filteredTodos = todos.filter((todo) => {
     if (filter === "Completadas") return todo.completed;
     if (filter === "Pendientes") return !todo.completed;
     return true;
   });
 
-  const editTodo = (id, newTask) => {
-    setTodos(
-      todos.map(todo => todo.id === id ? {...todo, task: newTask}: todo)
-    );
-  };
-
+  // Ordenar: pendientes arriba
   const sortedTodos = filteredTodos.sort((a, b) => a.completed - b.completed);
-  const pedingCount = todos.filter(todo => !todo.completed).length;
-  const completedCount = todos.filter(todo => todo.completed).length;
-  const totalCount = todos.length;
 
+  // Contadores
+  const pendingCount = todos.filter((todo) => !todo.completed).length;
+  const completedCount = todos.filter((todo) => todo.completed).length;
+  const totalCount = todos.length;
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>
       <h1>Mi To-Do App</h1>
-      <p style={{textAlign:"center", marginTop:"1rem"}}>
-        Total: {totalCount} | Pendientes: {pedingCount} | Completados: {completedCount}
+      <p style={{ textAlign: "center", marginTop: "1rem" }}>
+        Total: {totalCount} | Pendientes: {pendingCount} | Completadas: {completedCount}
       </p>
 
       {/* Botón para cambiar tema */}
@@ -80,12 +90,12 @@ function App() {
 
       <TodoInput addTodo={addTodo} />
       <TodoFilters currentFilter={filter} setFilter={setFilter} />
-      <TodoList 
-      todos={filteredTodos} 
-      toggleComplete={toggleComplete} 
-      deleteTodo={deleteTodo}
-      editTodo={editTodo} 
-      todo={sortedTodos}
+      {/* Pasar sortedTodos a TodoList */}
+      <TodoList
+        todos={sortedTodos}
+        toggleComplete={toggleComplete}
+        deleteTodo={deleteTodo}
+        editTodo={editTodo}
       />
     </div>
   );

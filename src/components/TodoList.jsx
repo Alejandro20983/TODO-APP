@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/priority.css";
+import "../styles/priorities.css"; // Asegúrate que el archivo se llame así
 
 function TodoList({ todos, toggleComplete, deleteTodo, editTodo }) {
   const [editingId, setEditingId] = useState(null);
@@ -19,11 +19,12 @@ function TodoList({ todos, toggleComplete, deleteTodo, editTodo }) {
   return (
     <ul>
       {todos.map((todo) => (
-        <li key={todo.id}
-        className={
-          todo.completed ? "competed" + (todo.priority ? 'todo-priority-${todo.priority}' : "")
-          : (todo.priority ? 'todo-priority-${todo.priority}': "")
-        }>
+        <li
+          key={todo.id}
+          className={`${todo.completed ? "completed" : ""} ${
+            todo.priority ? `todo-priority-${todo.priority}` : ""
+          }`}
+        >
           {editingId === todo.id ? (
             <>
               <input
@@ -43,7 +44,10 @@ function TodoList({ todos, toggleComplete, deleteTodo, editTodo }) {
               >
                 {todo.task}
               </span>
-              <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>
+              <button
+                className="delete-btn"
+                onClick={() => deleteTodo(todo.id)}
+              >
                 🗑️
               </button>
             </>

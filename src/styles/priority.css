@@ -1,11 +1,14 @@
 @import './colores.css';
-/*Prioridades de las tareas*/
-.todo-priority-low{
+
+/* Prioridades de las tareas */
+.todo-priority-low {
     border-left: 5px solid var(--tarea-color-1);
 }
-.todo-priority-medium{
+
+.todo-priority-medium {
     border-left: 5px solid var(--tarea-color-2);
 }
-.todo-priority-high{
+
+.todo-priority-high {
     border-left: 5px solid var(--primary-color);
 }
