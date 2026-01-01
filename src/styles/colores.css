@@ -4,4 +4,6 @@
     --background-color: #f0f2f5;
     --text-color: #333;
     --text-color-dark: #e0e0e0;
+    --tarea-color-1: #3498db;/*Prioridad baja*/
+    --tarea-color-2: #f1c40f;/*Prioridad media*/
 }
