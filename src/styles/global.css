@@ -165,35 +165,59 @@ button.delete-btn:hover {
 
 /* Tema oscuro */
 .App.dark {
-    background-color: #121212;
-    color: #e0e0e0;
+    background-color: #1a1a1a;/*Fondo oscuro*/
+    color: var(--text-color-dark);
+    transition: background 0.3s, color 0.3s;
 }
 
 .App.dark input[type="text"] {
-    background: #1e1e1e;
+    background: #2c2c2c;
     color: #fff;
-    border: 1px solid #555;
+    border: 1px solid var(--secondary-color);
+}
+.App.dark input[type="text"]:focus{
+    background-color: var(--primary-color);
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
 }
 
 .App.dark li {
-    background: #1e1e1e;
+    background: #2c2c2c;
+    border-left: 5px solid var(--primary-color);
     color: #e0e0e0;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .App.dark li.completed {
-    color: #888;
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+.App.dark li:hover{
+    transform: scale(1.02);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
 }
 
 .App.dark button {
-    border-color: #007BFF;
+    border-color: var(--secondary-color);
+    color: #fff;
+}
+.App.dark button:hover{
+    opacity: 0.9;
 }
 
 .App.dark .filters button {
-    border-color: #1e90ff;
-    color: #1e90ff;
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
 }
 
 .App.dark .filters button.active {
-    background: #1e90ff;
+    background: var(--secondary-color);
     color: #fff;
 }
+.App.dark button.delete-btn{
+    background-color: var(--primary-color);
+    color: #fff;
+}
+.App.dark button.delete-btn:hover{
+    background-color: var(--secondary-color);
+}
+
