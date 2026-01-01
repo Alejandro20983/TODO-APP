@@ -19,7 +19,11 @@ function TodoList({ todos, toggleComplete, deleteTodo, editTodo }) {
   return (
     <ul>
       {todos.map((todo) => (
-        <li key={todo.id}>
+        <li key={todo.id}
+        className={
+          todo.completed ? "competed" + (todo.priority ? 'todo-priority-${todo.priority}' : "")
+          : (todo.priority ? 'todo-priority-${todo.priority}': "")
+        }>
           {editingId === todo.id ? (
             <>
               <input

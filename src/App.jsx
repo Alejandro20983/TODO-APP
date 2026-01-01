@@ -27,8 +27,11 @@ function App() {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  const addTodo = (task) => {
-    const newTodo = { id: Date.now(), task, completed: false };
+  const addTodo = (task, priority = "low") => {
+    const newTodo = { id: Date.now(),
+      task,
+      completed: false,
+      priority};
     setTodos([...todos, newTodo]);
   };
 
