@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles/priority.css";
 
 function TodoList({ todos, toggleComplete, deleteTodo, editTodo }) {
   const [editingId, setEditingId] = useState(null);
