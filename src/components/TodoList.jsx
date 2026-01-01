@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/priorities.css"; // Asegúrate que el archivo se llame así
+import "../styles/priority.css"; // Asegúrate que el archivo se llame así
 
 function TodoList({ todos, toggleComplete, deleteTodo, editTodo }) {
   const [editingId, setEditingId] = useState(null);
