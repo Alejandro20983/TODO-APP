@@ -2,17 +2,27 @@ import { useState, useEffect } from "react";
 import TodoInput from "./components/TodoInput.jsx";
 import TodoList from "./components/TodoList.jsx";
 import TodoFilters from "./components/TodoFilters.jsx";
-import { auth, db } from "./firebase";
-import { collection, addDoc, query, where, onSnapshot, updateDoc, doc, deleteDoc } from "firebase/firestore";
-import { useUser } from "./contexts/UserContext";
+import { db } from "./firebase";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  onSnapshot,
+  updateDoc,
+  doc,
+  deleteDoc
+} from "firebase/firestore";
+import { useUser } from "./contexts/UserContext.jsx";
 
 function App() {
+  const { user } = useUser(); // Usuario logueado con uid y role
+  const [loading, setLoading] = useState(true);
+
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("Todas");
   const [darkMode, setDarkMode] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState("Todas");
-
-  const { user } = useUser(); // Usuario logueado con uid y role
 
   // Cargar tareas desde Firestore en tiempo real
   useEffect(() => {
@@ -25,6 +35,7 @@ function App() {
         tasks.push({ id: doc.id, ...doc.data() });
       });
       setTodos(tasks);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -89,9 +100,9 @@ function App() {
   const completedCount = todos.filter((todo) => todo.completed).length;
   const totalCount = todos.length;
 
-  // Mostrar login si no hay usuario
-  if (!user) {
-    return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando usuario...</p>;
+  // Mostrar mensaje mientras carga usuario/tareas
+  if (!user || loading) {
+    return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando usuario y tareas...</p>;
   }
 
   return (
