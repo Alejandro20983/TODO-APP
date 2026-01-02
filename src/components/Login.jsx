@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useUser } from "../contexts/UserContext.jsx";
-import "../styles/Login.css";
+import "../styles/login.css";
 
 function Login() {
   const { login, register } = useUser();
