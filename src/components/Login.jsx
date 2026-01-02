@@ -6,7 +6,7 @@ function Login() {
   const { login, register } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState("login"); // login o register
+  const [mode, setMode] = useState("login");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
@@ -24,7 +24,7 @@ function Login() {
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "2rem" }}>
+    <div className="login-container">
       <h2>{mode === "login" ? "Iniciar Sesión" : "Registro"}</h2>
       <form onSubmit={handleSubmit}>
         <input
@@ -32,7 +32,6 @@ function Login() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ padding: "0.5rem", margin: "0.5rem" }}
           required
         />
         <input
@@ -40,17 +39,16 @@ function Login() {
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ padding: "0.5rem", margin: "0.5rem" }}
           required
         />
         <div>
-          <button type="submit" style={{ padding: "0.5rem 1rem", margin: "0.5rem" }}>
+          <button type="submit" className="btn-submit">
             {mode === "login" ? "Ingresar" : "Registrar"}
           </button>
         </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="error">{error}</p>}
       </form>
-      <button onClick={() => setMode(mode === "login" ? "register" : "login")} style={{ marginTop: "1rem" }}>
+      <button className="btn-toggle" onClick={() => setMode(mode === "login" ? "register" : "login")}>
         {mode === "login" ? "Crear cuenta" : "Volver a iniciar sesión"}
       </button>
     </div>
