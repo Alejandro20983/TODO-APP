@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState, useEffect } from "react";
 import TodoInput from "./components/TodoInput.jsx";
 import TodoList from "./components/TodoList.jsx";
@@ -73,9 +74,11 @@ function App() {
   const completedCount = todos.filter((t) => t.completed).length;
   const totalCount = todos.length;
 
+  // Mostrar loading si aún se está cargando el usuario
   if (loading) return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando usuario...</p>;
 
-  if (!user) return <Login />; // Mostrar login si no hay usuario
+  // Mostrar login si no hay usuario
+  if (!user) return <Login />;
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>

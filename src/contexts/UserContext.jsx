@@ -1,6 +1,12 @@
+// src/contexts/UserContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../firebase";
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const UserContext = createContext();
@@ -14,9 +20,13 @@ export function UserProvider({ children }) {
       if (currentUser) {
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
         if (userDoc.exists()) {
-          setUser({ uid: currentUser.uid, email: currentUser.email, role: userDoc.data().role });
+          setUser({
+            uid: currentUser.uid,
+            email: currentUser.email,
+            role: userDoc.data().role,
+          });
         } else {
-          // Usuario logueado pero no existe en Firestore, creamos por defecto
+          // Crear usuario por defecto si no existe en Firestore
           await setDoc(doc(db, "users", currentUser.uid), { role: "user" });
           setUser({ uid: currentUser.uid, email: currentUser.email, role: "user" });
         }
@@ -29,11 +39,14 @@ export function UserProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  // Funciones de login, registro y logout
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
+
   const register = async (email, password, role = "user") => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db, "users", cred.user.uid), { role });
   };
+
   const logout = () => signOut(auth);
 
   return (
