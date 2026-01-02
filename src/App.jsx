@@ -2,69 +2,82 @@ import { useState, useEffect } from "react";
 import TodoInput from "./components/TodoInput.jsx";
 import TodoList from "./components/TodoList.jsx";
 import TodoFilters from "./components/TodoFilters.jsx";
+import { auth, db } from "./firebase";
+import { collection, addDoc, query, where, onSnapshot, updateDoc, doc, deleteDoc } from "firebase/firestore";
+import { useUser } from "./contexts/UserContext";
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("Todas");
   const [darkMode, setDarkMode] = useState(false);
-  const[priorityFilter, setPriorityFilter] = useState("Todas");
+  const [priorityFilter, setPriorityFilter] = useState("Todas");
 
-  // Cargar tareas y tema desde localStorage al iniciar
+  const { user } = useUser(); // Usuario logueado con uid y role
+
+  // Cargar tareas desde Firestore en tiempo real
   useEffect(() => {
-    const storedTodos = localStorage.getItem("todos");
-    if (storedTodos) setTodos(JSON.parse(storedTodos));
+    if (!user) return;
 
+    const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const tasks = [];
+      querySnapshot.forEach((doc) => {
+        tasks.push({ id: doc.id, ...doc.data() });
+      });
+      setTodos(tasks);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Guardar tema en localStorage
+  useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme) setDarkMode(storedTheme === "dark");
   }, []);
 
-  // Guardar tareas en localStorage
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
-
-  // Guardar tema en localStorage
   useEffect(() => {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Agregar tarea con prioridad
-  const addTodo = (task, priority = "low") => {
-    const newTodo = {
-      id: Date.now(),
+  // Agregar tarea con prioridad a Firestore
+  const addTodo = async (task, priority = "low") => {
+    if (!user) return;
+    await addDoc(collection(db, "tasks"), {
       task,
       completed: false,
-      priority, // low, medium, high
-    };
-    setTodos([...todos, newTodo]);
+      priority,
+      userId: user.uid,
+    });
   };
 
-  const toggleComplete = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+  // Marcar completada / no completada
+  const toggleComplete = async (id, completed) => {
+    const taskRef = doc(db, "tasks", id);
+    await updateDoc(taskRef, { completed: !completed });
   };
 
-  const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  // Eliminar tarea
+  const deleteTodo = async (id) => {
+    const taskRef = doc(db, "tasks", id);
+    await deleteDoc(taskRef);
   };
 
-  const editTodo = (id, newTask) => {
-    setTodos(
-      todos.map((todo) => (todo.id === id ? { ...todo, task: newTask } : todo))
-    );
+  // Editar tarea
+  const editTodo = async (id, newTask) => {
+    const taskRef = doc(db, "tasks", id);
+    await updateDoc(taskRef, { task: newTask });
   };
 
-  // Filtrado por completadas/pendientes
+  // Filtrado por estado y prioridad
   const filteredTodos = todos.filter((todo) => {
-    if (filter === "Completadas") return todo.completed;
-    if (filter === "Pendientes") return !todo.completed;
+    if (filter === "Completadas" && !todo.completed) return false;
+    if (filter === "Pendientes" && todo.completed) return false;
 
-    if(priorityFilter === "Baja" && todo.priority !== "low") return false;
-    if(priorityFilter === "Media" && todo.priority !== "medium") return false;
-    if(priorityFilter === "Alta" && todo.priority !== "high") return false;
+    if (priorityFilter === "Baja" && todo.priority !== "low") return false;
+    if (priorityFilter === "Media" && todo.priority !== "medium") return false;
+    if (priorityFilter === "Alta" && todo.priority !== "high") return false;
+
     return true;
   });
 
@@ -75,6 +88,11 @@ function App() {
   const pendingCount = todos.filter((todo) => !todo.completed).length;
   const completedCount = todos.filter((todo) => todo.completed).length;
   const totalCount = todos.length;
+
+  // Mostrar login si no hay usuario
+  if (!user) {
+    return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando usuario...</p>;
+  }
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>
@@ -94,11 +112,18 @@ function App() {
       </div>
 
       <TodoInput addTodo={addTodo} />
-      <TodoFilters currentFilter={filter} setFilter={setFilter} currentPriority={priorityFilter} setPriorityFilter={setPriorityFilter} />
-      {/* Pasar sortedTodos a TodoList */}
+      <TodoFilters
+        currentFilter={filter}
+        setFilter={setFilter}
+        currentPriority={priorityFilter}
+        setPriorityFilter={setPriorityFilter}
+      />
       <TodoList
         todos={sortedTodos}
-        toggleComplete={toggleComplete}
+        toggleComplete={(id) => {
+          const todo = todos.find((t) => t.id === id);
+          toggleComplete(id, todo.completed);
+        }}
         deleteTodo={deleteTodo}
         editTodo={editTodo}
       />
