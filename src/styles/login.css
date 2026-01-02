@@ -1,0 +1,92 @@
+/* Container general */
+.login-container {
+  max-width: 400px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  font-family: Arial, sans-serif;
+  transition: all 0.3s ease;
+}
+
+/* Título */
+.login-container h2 {
+  margin-bottom: 1.5rem;
+  color: #800080; /* morado principal */
+}
+
+/* Inputs */
+.login-container input {
+  width: 90%;
+  padding: 0.7rem;
+  margin: 0.5rem 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.3s;
+}
+
+.login-container input:focus {
+  border-color: #ff0000; /* rojo */
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+/* Botones */
+.login-container button {
+  padding: 0.6rem 1.2rem;
+  margin: 0.5rem 0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.login-container button:hover {
+  opacity: 0.85;
+}
+
+/* Botón de submit */
+.login-container .btn-submit {
+  background: linear-gradient(135deg, #800080, #ff0000);
+  color: #fff;
+}
+
+/* Cambiar entre login y registro */
+.login-container .btn-toggle {
+  background: none;
+  color: #800080;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+/* Mensajes de error */
+.login-container .error {
+  color: #e74c3c;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Dark Mode */
+.App.dark .login-container {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+
+.App.dark .login-container input {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+.App.dark .login-container input:focus {
+  border-color: #ff0000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+.App.dark .login-container .btn-submit {
+  background: linear-gradient(135deg, #800080, #ff0000);
+}
