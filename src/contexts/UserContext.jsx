@@ -4,30 +4,34 @@ import { supabase } from "../supabase.js";
 
 const UserContext = createContext();
 
-export const useUser = () => useContext(UserContext);
-
-export const UserProvider = ({ children }) => {
+export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Cargar sesión actual
+  // Inicializar usuario al cargar la app
   useEffect(() => {
     const session = supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user || null);
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      setLoading(false);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+      }
+    );
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   // Login
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) throw error;
     setUser(data.user);
   };
@@ -38,39 +42,33 @@ export const UserProvider = ({ children }) => {
     setUser(null);
   };
 
-  // Registro con rol y tabla específica
-  const registerWithRole = async (email, password, role, extraData) => {
-    // 1. Crear usuario en Supabase Auth
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-    if (signUpError) throw signUpError;
+  // Registro
+  const register = async (email, password, type) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    if (error) throw error;
 
-    const auth_id = signUpData.user.id;
+    const userId = data.user.id;
 
-    // 2. Crear perfil general
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .insert([{ auth_id, role }])
-      .select()
-      .single();
-    if (profileError) throw profileError;
-
-    const profile_id = profileData.id;
-
-    // 3. Insertar datos específicos según rol
-    if (role === "familia") {
-      await supabase.from("familias").insert([{ profile_id, ...extraData }]);
-    } else if (role === "estudiante") {
-      await supabase.from("estudiantes").insert([{ profile_id, ...extraData }]);
-    } else if (role === "empresa") {
-      await supabase.from("empresas").insert([{ profile_id, ...extraData }]);
+    // Crear registro en la tabla correspondiente según el tipo
+    if (type === "familia") {
+      await supabase.from("familia").insert([{ id: userId, email }]);
+    } else if (type === "estudiante") {
+      await supabase.from("estudiantes").insert([{ id: userId, email }]);
+    } else if (type === "empresa") {
+      await supabase.from("empresas").insert([{ id: userId, email }]);
     }
 
-    return signUpData.user;
+    setUser(data.user);
   };
 
   return (
-    <UserContext.Provider value={{ user, loading, login, logout, registerWithRole }}>
+    <UserContext.Provider value={{ user, loading, login, logout, register }}>
       {children}
     </UserContext.Provider>
   );
-};
+}
+
+export const useUser = () => useContext(UserContext);
