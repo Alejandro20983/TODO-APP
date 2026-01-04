@@ -7,7 +7,7 @@ export default function Login() {
   const { login, register } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState("login"); // login o register
+  const [mode, setMode] = useState("login");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
@@ -42,15 +42,10 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="btn-submit">
-          {mode === "login" ? "Ingresar" : "Registrar"}
-        </button>
+        <button type="submit" className="btn-submit">{mode === "login" ? "Ingresar" : "Registrar"}</button>
       </form>
       {error && <p className="error">{error}</p>}
-      <button
-        onClick={() => setMode(mode === "login" ? "register" : "login")}
-        className="btn-toggle"
-      >
+      <button className="btn-toggle" onClick={() => setMode(mode === "login" ? "register" : "login")}>
         {mode === "login" ? "Crear cuenta" : "Volver a iniciar sesión"}
       </button>
     </div>

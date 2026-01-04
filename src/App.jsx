@@ -12,8 +12,8 @@ function App() {
   const { user, loading, logout } = useUser(); 
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("Todas");
-  const [darkMode, setDarkMode] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState("Todas");
+  const [darkMode, setDarkMode] = useState(false);
 
   // Cargar tareas en tiempo real
   useEffect(() => {
@@ -27,7 +27,7 @@ function App() {
     return () => unsubscribe();
   }, [user]);
 
-  // Guardar tema en localStorage
+  // Guardar y cargar tema del localStorage
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme) setDarkMode(storedTheme === "dark");
@@ -37,6 +37,7 @@ function App() {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
+  // CRUD de tareas
   const addTodo = async (task, priority = "low") => {
     if (!user) return;
     await addDoc(collection(db, "tasks"), { task, completed: false, priority, userId: user.uid });
