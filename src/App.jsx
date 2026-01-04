@@ -1,33 +1,48 @@
-// src/App.jsx
 import { useState, useEffect } from "react";
 import TodoInput from "./components/TodoInput.jsx";
 import TodoList from "./components/TodoList.jsx";
 import TodoFilters from "./components/TodoFilters.jsx";
 import Login from "./components/Login.jsx";
-import { db } from "./firebase";
-import { collection, addDoc, query, where, onSnapshot, updateDoc, doc, deleteDoc } from "firebase/firestore";
+import { supabase } from "./supabase.js";
 import { useUser } from "./contexts/UserContext.jsx";
+import "./styles/global.css";
 
 function App() {
-  const { user, loading, logout } = useUser(); 
+  const { user, loading, logout } = useUser();
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("Todas");
-  const [priorityFilter, setPriorityFilter] = useState("Todas");
   const [darkMode, setDarkMode] = useState(false);
+  const [priorityFilter, setPriorityFilter] = useState("Todas");
 
-  // Cargar tareas en tiempo real
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const tasks = [];
-      querySnapshot.forEach((doc) => tasks.push({ id: doc.id, ...doc.data() }));
-      setTodos(tasks);
-    });
-    return () => unsubscribe();
+
+    const fetchTodos = async () => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("user_id", user.id);
+      if (!error) setTodos(data);
+    };
+
+    fetchTodos();
+
+    const subscription = supabase
+      .channel("public:tasks")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          fetchTodos();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, [user]);
 
-  // Guardar y cargar tema del localStorage
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme) setDarkMode(storedTheme === "dark");
@@ -37,28 +52,23 @@ function App() {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // CRUD de tareas
   const addTodo = async (task, priority = "low") => {
     if (!user) return;
-    await addDoc(collection(db, "tasks"), { task, completed: false, priority, userId: user.uid });
+    await supabase.from("tasks").insert({ task, completed: false, priority, user_id: user.id });
   };
 
   const toggleComplete = async (id, completed) => {
-    const taskRef = doc(db, "tasks", id);
-    await updateDoc(taskRef, { completed: !completed });
+    await supabase.from("tasks").update({ completed: !completed }).eq("id", id);
   };
 
   const deleteTodo = async (id) => {
-    const taskRef = doc(db, "tasks", id);
-    await deleteDoc(taskRef);
+    await supabase.from("tasks").delete().eq("id", id);
   };
 
   const editTodo = async (id, newTask) => {
-    const taskRef = doc(db, "tasks", id);
-    await updateDoc(taskRef, { task: newTask });
+    await supabase.from("tasks").update({ task: newTask }).eq("id", id);
   };
 
-  // Filtrado y orden
   const filteredTodos = todos.filter((todo) => {
     if (filter === "Completadas" && !todo.completed) return false;
     if (filter === "Pendientes" && todo.completed) return false;
@@ -70,15 +80,12 @@ function App() {
 
   const sortedTodos = filteredTodos.sort((a, b) => a.completed - b.completed);
 
-  // Contadores
   const pendingCount = todos.filter((t) => !t.completed).length;
   const completedCount = todos.filter((t) => t.completed).length;
   const totalCount = todos.length;
 
-  // Mostrar loading si aún se está cargando el usuario
   if (loading) return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando usuario...</p>;
 
-  // Mostrar login si no hay usuario
   if (!user) return <Login />;
 
   return (
@@ -88,7 +95,6 @@ function App() {
         Total: {totalCount} | Pendientes: {pendingCount} | Completadas: {completedCount}
       </p>
 
-      {/* Botones */}
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button
           onClick={() => setDarkMode(!darkMode)}

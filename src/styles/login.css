@@ -16,7 +16,8 @@
   color: #800080;
 }
 
-.login-container input {
+.login-container input,
+.login-container select {
   width: 90%;
   padding: 0.7rem;
   margin: 0.5rem 0;
@@ -26,7 +27,8 @@
   transition: 0.3s;
 }
 
-.login-container input:focus {
+.login-container input:focus,
+.login-container select:focus {
   border-color: #ff0000;
   box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
 }
@@ -63,6 +65,13 @@
   font-size: 0.9rem;
 }
 
+/* Campos dinámicos adicionales */
+.login-container .extra-field {
+  display: block;
+  width: 90%;
+  margin: 0.3rem auto;
+}
+
 /* Dark Mode */
 .App.dark .login-container {
   background-color: #1e1e1e;
@@ -70,13 +79,15 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
 
-.App.dark .login-container input {
+.App.dark .login-container input,
+.App.dark .login-container select {
   background-color: #2a2a2a;
   color: #e0e0e0;
   border: 1px solid #555;
 }
 
-.App.dark .login-container input:focus {
+.App.dark .login-container input:focus,
+.App.dark .login-container select:focus {
   border-color: #ff0000;
   box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
 }
