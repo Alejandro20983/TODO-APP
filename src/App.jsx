@@ -3,32 +3,23 @@ import TodoInput from "./components/TodoInput.jsx";
 import TodoList from "./components/TodoList.jsx";
 import TodoFilters from "./components/TodoFilters.jsx";
 import Login from "./components/Login.jsx";
-import { supabase } from "./supabase.js";
+import { supabase } from "./supabase";
 import { useUser } from "./contexts/UserContext.jsx";
 import "./styles/global.css";
 
 function App() {
-  const { user, loading, logout } = useUser();
+  const { user, loading, logout } = useUser(); 
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("Todas");
   const [darkMode, setDarkMode] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState("Todas");
 
+  // Cargar tareas en tiempo real
   useEffect(() => {
     if (!user) return;
 
-    const fetchTodos = async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("user_id", user.id);
-      if (!error) setTodos(data);
-    };
-
-    fetchTodos();
-
-    const subscription = supabase
-      .channel("public:tasks")
+    const channel = supabase
+      .channel(`todos_user_${user.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tasks", filter: `user_id=eq.${user.id}` },
@@ -38,11 +29,23 @@ function App() {
       )
       .subscribe();
 
+    const fetchTodos = async () => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (!error) setTodos(data);
+    };
+
+    fetchTodos();
+
     return () => {
-      supabase.removeChannel(subscription);
+      supabase.removeChannel(channel);
     };
   }, [user]);
 
+  // Guardar tema en localStorage
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme) setDarkMode(storedTheme === "dark");
@@ -69,6 +72,7 @@ function App() {
     await supabase.from("tasks").update({ task: newTask }).eq("id", id);
   };
 
+  // Filtrado y orden
   const filteredTodos = todos.filter((todo) => {
     if (filter === "Completadas" && !todo.completed) return false;
     if (filter === "Pendientes" && todo.completed) return false;
@@ -80,12 +84,12 @@ function App() {
 
   const sortedTodos = filteredTodos.sort((a, b) => a.completed - b.completed);
 
+  // Contadores
   const pendingCount = todos.filter((t) => !t.completed).length;
   const completedCount = todos.filter((t) => t.completed).length;
   const totalCount = todos.length;
 
   if (loading) return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando usuario...</p>;
-
   if (!user) return <Login />;
 
   return (
@@ -95,6 +99,7 @@ function App() {
         Total: {totalCount} | Pendientes: {pendingCount} | Completadas: {completedCount}
       </p>
 
+      {/* Botones */}
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button
           onClick={() => setDarkMode(!darkMode)}

@@ -1,20 +1,25 @@
-// src/contexts/UserContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "../supabase.js";
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../supabase";
 
 const UserContext = createContext();
 
-export function UserProvider({ children }) {
+export const useUser = () => useContext(UserContext);
+
+export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Inicializar usuario al cargar la app
+  // Obtener la sesión inicial
   useEffect(() => {
-    const session = supabase.auth.getSession().then(({ data }) => {
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
       setUser(data.session?.user || null);
       setLoading(false);
-    });
+    };
 
+    getSession();
+
+    // Escuchar cambios de autenticación
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user || null);
@@ -26,7 +31,7 @@ export function UserProvider({ children }) {
     };
   }, []);
 
-  // Login
+  // Función de login
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -34,41 +39,30 @@ export function UserProvider({ children }) {
     });
     if (error) throw error;
     setUser(data.user);
+    return data.user;
   };
 
-  // Logout
-  const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
-
-  // Registro
-  const register = async (email, password, type) => {
+  // Función de registro
+  const signup = async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
     if (error) throw error;
-
-    const userId = data.user.id;
-
-    // Crear registro en la tabla correspondiente según el tipo
-    if (type === "familia") {
-      await supabase.from("familia").insert([{ id: userId, email }]);
-    } else if (type === "estudiante") {
-      await supabase.from("estudiantes").insert([{ id: userId, email }]);
-    } else if (type === "empresa") {
-      await supabase.from("empresas").insert([{ id: userId, email }]);
-    }
-
     setUser(data.user);
+    return data.user;
+  };
+
+  // Función de logout
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    setUser(null);
   };
 
   return (
-    <UserContext.Provider value={{ user, loading, login, logout, register }}>
+    <UserContext.Provider value={{ user, loading, login, signup, logout }}>
       {children}
     </UserContext.Provider>
   );
-}
-
-export const useUser = () => useContext(UserContext);
+};
