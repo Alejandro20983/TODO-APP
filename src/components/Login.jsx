@@ -7,7 +7,7 @@ export default function Login() {
   const { login, register } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState("login"); // login o register
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
