@@ -1,58 +1,35 @@
+// src/components/Register.jsx
 import { useState } from "react";
-import {auth, db} from "./firebase.js";
-import {createUserWithEmailAndPasword} from "firebase/auth";
-import {doc, setDoc} from "firebase/firestore";
+import { useUser } from "../contexts/UserContext";
+import "../styles/login.css";
 
-function Register(){
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [role, setRole] = useState ("estudiante");// Estado especifico para el rol
-    const [error, setError] = useState("");
+export default function Register() {
+  const { register } = useUser();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("familia");
+  const [error, setError] = useState("");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try{
-            const userCredential = await createUserWithEmailAndPasword(auth, email, password);
-            const user = userCredential.user;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const err = await register(email, password, role);
+    if (err) setError(err.message);
+  };
 
-            //Guardamos los roles y email en firestone
-            await setDoc(doc(db, "users", user.uid),{email, role});
-            console.log("Usuario registrado con rol:", role);
-        }catch(err){
-            setError("Error al registrar al usuario: " + err.message);
-        }
-    };
-    return(
-        <form onSubmit={handleSubmit} style={{textAlign:"center", marginTop:"2rem"}}>
-            <h2>Registro</h2>
-            <input 
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{padding:"0.5rem",margin:"0.5rem"}}/>
-
-            <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{padding:"0.5rem", margin:"0.5rem"}}/>
-            <select 
-            value={role} onChange={(e) => setRole(e.target.value)} 
-            style={{padding:"0.5rem", margin:"0.5rem"}}>
-                <option value="Familiar">Familiar</option>
-                <option value="Estudiante">Estudiante</option>
-                <option value="Empresa">Empresa</option>
-            </select>
-            <br/>
-            <button type="submit" 
-            style={{padding:"0.5rem 1rem", margin:"0.5rem"}}>Registrar</button>
-            {error && <p style={{color:"red"}}>{error}</p>}
-        </form>
-    );
+  return (
+    <div className="login-container">
+      <h2>Registro</h2>
+      <form onSubmit={handleSubmit}>
+        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+        <select value={role} onChange={e => setRole(e.target.value)}>
+          <option value="familia">Familiar</option>
+          <option value="estudiante">Estudiante</option>
+          <option value="empresa">Empresa</option>
+        </select>
+        <button type="submit" className="btn-submit">Registrarse</button>
+      </form>
+      {error && <p className="error">{error}</p>}
+    </div>
+  );
 }
-
-export default Register;

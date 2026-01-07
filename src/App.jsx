@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState, useEffect } from "react";
 import TodoInput from "./components/TodoInput.jsx";
 import TodoList from "./components/TodoList.jsx";
@@ -8,41 +9,46 @@ import { useUser } from "./contexts/UserContext.jsx";
 import "./styles/global.css";
 
 function App() {
-  const { user, loading, logout } = useUser(); 
+  const { user, loading, logout } = useUser();
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("Todas");
-  const [darkMode, setDarkMode] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState("Todas");
+  const [darkMode, setDarkMode] = useState(false);
+  const [error, setError] = useState("");
 
-  // Cargar tareas en tiempo real
+  // Fetch todos
+  const fetchTodos = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error fetching todos:", error);
+      setError("Error cargando tareas");
+    } else {
+      setTodos(data);
+      setError("");
+    }
+  };
+
+  // Cargar tareas y suscripción en tiempo real
   useEffect(() => {
     if (!user) return;
+
+    fetchTodos();
 
     const channel = supabase
       .channel(`todos_user_${user.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tasks", filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          fetchTodos();
-        }
+        () => fetchTodos()
       )
       .subscribe();
 
-    const fetchTodos = async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (!error) setTodos(data);
-    };
-
-    fetchTodos();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, [user]);
 
   // Guardar tema en localStorage
@@ -55,21 +61,33 @@ function App() {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
+  // CRUD
   const addTodo = async (task, priority = "low") => {
     if (!user) return;
-    await supabase.from("tasks").insert({ task, completed: false, priority, user_id: user.id });
+    const { error } = await supabase
+      .from("tasks")
+      .insert({ task, completed: false, priority, user_id: user.id });
+
+    if (error) console.error("Error adding todo:", error);
   };
 
-  const toggleComplete = async (id, completed) => {
-    await supabase.from("tasks").update({ completed: !completed }).eq("id", id);
+  const handleToggleComplete = async (id, completed) => {
+    const { error } = await supabase
+      .from("tasks")
+      .update({ completed: !completed })
+      .eq("id", id);
+
+    if (error) console.error("Error updating todo:", error);
   };
 
   const deleteTodo = async (id) => {
-    await supabase.from("tasks").delete().eq("id", id);
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) console.error("Error deleting todo:", error);
   };
 
   const editTodo = async (id, newTask) => {
-    await supabase.from("tasks").update({ task: newTask }).eq("id", id);
+    const { error } = await supabase.from("tasks").update({ task: newTask }).eq("id", id);
+    if (error) console.error("Error editing todo:", error);
   };
 
   // Filtrado y orden
@@ -89,6 +107,7 @@ function App() {
   const completedCount = todos.filter((t) => t.completed).length;
   const totalCount = todos.length;
 
+  // Loading o Login
   if (loading) return <p style={{ textAlign: "center", marginTop: "2rem" }}>Cargando usuario...</p>;
   if (!user) return <Login />;
 
@@ -99,6 +118,8 @@ function App() {
         Total: {totalCount} | Pendientes: {pendingCount} | Completadas: {completedCount}
       </p>
 
+      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+
       {/* Botones */}
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <button
@@ -107,7 +128,10 @@ function App() {
         >
           Cambiar a {darkMode ? "Claro" : "Oscuro"}
         </button>
-        <button onClick={logout} style={{ padding: "0.5rem 1rem", borderRadius: "5px", cursor: "pointer" }}>
+        <button
+          onClick={logout}
+          style={{ padding: "0.5rem 1rem", borderRadius: "5px", cursor: "pointer" }}
+        >
           Cerrar sesión
         </button>
       </div>
@@ -123,7 +147,7 @@ function App() {
         todos={sortedTodos}
         toggleComplete={(id) => {
           const todo = todos.find((t) => t.id === id);
-          toggleComplete(id, todo.completed);
+          handleToggleComplete(id, todo.completed);
         }}
         deleteTodo={deleteTodo}
         editTodo={editTodo}
