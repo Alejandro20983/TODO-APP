@@ -16,19 +16,19 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    if (isRegister) {
-      const err = await register({ email, password, role, name, extra });
-      if (err) {
-        setError(err.message || "Error al registrarse");
+    try {
+      if (isRegister) {
+        const err = await register({ email, password, role, name, extra });
+        if (err) setError(err.message || "Error al registrarse");
+        // No alertas ni redirección manual, todo lo maneja UserContext
       } else {
-        alert("Registro exitoso. Revisa tu correo para confirmar y luego inicia sesión.");
-        setIsRegister(false);
+        const err = await login({ email, password });
+        if (err) setError(err.message || "Error al iniciar sesión");
+        // La redirección también la maneja UserContext
       }
-    } else {
-      const err = await login({ email, password });
-      if (err) {
-        setError(err.message || "Error al iniciar sesión");
-      }
+    } catch (e) {
+      setError("Ocurrió un error. Revisa tus datos e intenta de nuevo.");
+      console.error(e);
     }
   };
 
