@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "../supabase";
-import bcrypt from "bcryptjs"; // <-- Importamos bcrypt
 
 const UserContext = createContext();
 
@@ -10,23 +9,26 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user || null);
       setLoading(false);
     };
     init();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+      }
+    );
 
     return () => listener.subscription.unsubscribe();
   }, []);
 
   const login = async ({ email, password }) => {
-    if (!email || !password) return { message: "Email y contraseña son obligatorios." };
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (error) {
       return { message: "Email o contraseña incorrectos." };
@@ -37,33 +39,23 @@ export const UserProvider = ({ children }) => {
   };
 
   const register = async ({ email, password, role, name, extra }) => {
-    if (!email || !password || !role || !name) {
-      return { message: "Todos los campos son obligatorios." };
-    }
-
-    const { data, error } = await supabase.auth.signUp(
-      { email, password },
-      { emailRedirectTo: window.location.origin }
-    );
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
 
     if (error) return { message: error.message };
+    if (!data.user) return { message: "No se pudo crear el usuario." };
 
-    if (!data.user) return { message: "Debes confirmar tu correo para completar el registro." };
-
-    // Crear hash de contraseña
-    const salt = bcrypt.genSaltSync(10);
-    const password_hash = bcrypt.hashSync(password, salt);
-
-    const { error: upsertError } = await supabase.from("profiles").upsert({
+    const { error: profileError } = await supabase.from("profiles").insert({
       id: data.user.id,
       email,
       role,
       name,
       extra,
-      password_hash, // Guardamos el hash seguro
     });
 
-    if (upsertError) return { message: upsertError.message };
+    if (profileError) return { message: profileError.message };
 
     setUser(data.user);
     return null;
